@@ -1,0 +1,135 @@
+// Q-Teacher (ระบบนัดหมายเข้าพบอาจารย์) - OWN database schema.
+//
+// Naming follows the CSMJU2030 Subsystem Standard (data-dictionary.md 9): PostgreSQL
+// tables are plural snake_case and every column is snake_case through @map, while
+// Prisma/TypeScript field names stay camelCase. Every id is a UUID v4.
+//
+// This database belongs to the subsystem only. It never contains Core Hub users,
+// passwords, sessions or key material. A person is kept as Core Hub ids only
+// (reference-data.md 8): `*CoreUserId` is the token's `sub` (text, never a UUID) and
+// `*PersonCode` comes from Core Hub's /people endpoints - no names, no emails.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+// The connection string is supplied by prisma.config.ts (CLI) and by the
+// PrismaPg adapter in PrismaService (runtime) - always this subsystem's own
+// DATABASE_URL, never the Core Hub database.
+datasource db {
+  provider = "postgresql"
+}
+
+/// Office hours repeat weekly on a weekday (Monday to Friday).
+enum DayOfWeek {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+}
+
+/// A one-off change to a teacher's weekly office hours.
+enum ExceptionStatus {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+/// The weekly time a teacher is available for appointments.
+model OfficeHour {
+  id String @id @default(uuid())
+
+  /// The teacher: Core Hub `sub` of the lecturer who owns these office hours.
+  teacherCoreUserId String  @map("teacher_core_user_id")
+  /// Staff code from Core Hub GET /people/me when the row was made - shown instead of a name.
+  teacherPersonCode String? @map("teacher_person_code")
+
+  dayOfWeek DayOfWeek @map("day_of_week")
+  /// Minutes after local midnight (Asia/Bangkok), e.g. 540 = 09:00.
+  startMinute Int @map("start_minute")
+  endMinute   Int @map("end_minute")
+  /// Length of one bookable slot in minutes.
+  slotMinutes Int @default(30) @map("slot_minutes")
+  isAvailable Boolean @default(true) @map("is_available")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([teacherCoreUserId, dayOfWeek])
+  @@map("office_hours")
+}
+
+/// Opens (AVAILABLE) or closes (UNAVAILABLE) one stretch of time on one date,
+/// overriding the weekly office hours.
+model BookingException {
+  id String @id @default(uuid())
+
+  teacherCoreUserId String   @map("teacher_core_user_id")
+  startsAt          DateTime @map("starts_at")
+  endsAt            DateTime @map("ends_at")
+  status            ExceptionStatus
+  reason            String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([teacherCoreUserId, startsAt])
+  @@map("booking_exceptions")
+}
+
+/// An appointment the teacher puts into their own queue for one student.
+model Booking {
+  id String @id @default(uuid())
+
+  teacherCoreUserId String  @map("teacher_core_user_id")
+  teacherPersonCode String? @map("teacher_person_code")
+  /// The student: Core Hub `sub` of the student's account (text, not a UUID).
+  studentCoreUserId String  @map("student_core_user_id")
+  studentPersonCode String? @map("student_person_code")
+
+  startsAt DateTime @map("starts_at")
+  endsAt   DateTime @map("ends_at")
+  topic    String
+
+  status BookingStatus @default(CONFIRMED)
+
+  /// Core Hub `sub` of whoever cancelled or completed it.
+  closedByCoreUserId String? @map("closed_by_core_user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  messages ChatMessage[]
+
+  @@index([teacherCoreUserId, startsAt])
+  @@index([studentCoreUserId])
+  @@index([status])
+  @@map("bookings")
+}
+
+/// A chat message between the teacher and the student of one booking.
+model ChatMessage {
+  id String @id @default(uuid())
+
+  bookingId String  @map("booking_id")
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  /// Core Hub `sub` of the sender - one of the booking's two people.
+  senderCoreUserId String  @map("sender_core_user_id")
+  message          String
+  isRead           Boolean @default(false) @map("is_read")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([bookingId, createdAt])
+  @@map("chat_messages")
+}

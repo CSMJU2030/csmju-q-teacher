@@ -1,0 +1,1706 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/me": {
+      "get": {
+        "operationId": "MeController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/MeModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Me"
+        ],
+        "summary": "ตัวตนของผู้ใช้ที่ login อยู่ (จาก token ที่ตรวจแล้ว)"
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/HealthModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Health"
+        ],
+        "summary": "ตรวจสถานะระบบ (สาธารณะ)"
+      }
+    },
+    "/api/v1/office-hours": {
+      "get": {
+        "operationId": "OfficeHoursController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "teacherCoreUserId",
+            "required": false,
+            "in": "query",
+            "description": "ค่า sub ของอาจารย์ (ไม่ใช่ UUID เสมอไป)",
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OfficeHourResponse"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "เวลาทำการรายสัปดาห์ของอาจารย์ (กรองด้วย teacherCoreUserId)",
+        "tags": [
+          "office-hours"
+        ]
+      },
+      "post": {
+        "operationId": "OfficeHoursController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOfficeHourDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/OfficeHourResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "เพิ่มเวลาทำการของตัวเอง",
+        "tags": [
+          "office-hours"
+        ]
+      }
+    },
+    "/api/v1/office-hours/{id}": {
+      "patch": {
+        "operationId": "OfficeHoursController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfficeHourDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/OfficeHourResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "แก้ไขเวลาทำการ",
+        "tags": [
+          "office-hours"
+        ]
+      },
+      "delete": {
+        "operationId": "OfficeHoursController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DeletedModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ลบเวลาทำการ",
+        "tags": [
+          "office-hours"
+        ]
+      }
+    },
+    "/api/v1/booking-exceptions": {
+      "get": {
+        "operationId": "BookingExceptionsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "teacherCoreUserId",
+            "required": false,
+            "in": "query",
+            "description": "ค่า sub ของอาจารย์ (ไม่ใช่ UUID เสมอไป)",
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-05",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-09",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BookingExceptionResponse"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "รายการเปิด/ปิดเวลาเฉพาะวันของอาจารย์",
+        "tags": [
+          "booking-exceptions"
+        ]
+      },
+      "post": {
+        "operationId": "BookingExceptionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingExceptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingExceptionResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "เปิดหรือปิดเวลาเฉพาะช่วงของตัวเอง",
+        "tags": [
+          "booking-exceptions"
+        ]
+      }
+    },
+    "/api/v1/booking-exceptions/{id}": {
+      "delete": {
+        "operationId": "BookingExceptionsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DeletedModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ยกเลิกรายการเปิด/ปิดเวลา (ย้อนกลับไปใช้เวลาทำการรายสัปดาห์)",
+        "tags": [
+          "booking-exceptions"
+        ]
+      }
+    },
+    "/api/v1/bookings": {
+      "get": {
+        "operationId": "BookingsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CONFIRMED",
+                "CANCELLED",
+                "COMPLETED"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-05",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-09",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "startsAt",
+              "type": "string",
+              "enum": [
+                "startsAt",
+                "-startsAt",
+                "-createdAt"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BookingResponse"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "คิวนัดหมายของฉัน (อาจารย์เห็นคิวที่ตัวเองดูแล นักศึกษาเห็นคิวของตัวเอง)",
+        "tags": [
+          "bookings"
+        ]
+      },
+      "post": {
+        "operationId": "BookingsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "อาจารย์สร้างนัดหมายให้นักศึกษาในคิวของตัวเอง",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{id}": {
+      "get": {
+        "operationId": "BookingsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ดูนัดหมายรายการเดียว",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{id}/cancel": {
+      "patch": {
+        "operationId": "BookingsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ยกเลิกนัดหมาย (ช่วงเวลากลับไปว่าง)",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/bookings/{id}/complete": {
+      "patch": {
+        "operationId": "BookingsController_complete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BookingResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ทำเครื่องหมายว่านัดหมายเสร็จสิ้น",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/api/v1/chat-messages": {
+      "get": {
+        "operationId": "ChatMessagesController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "bookingId",
+            "required": true,
+            "in": "query",
+            "description": "นัดหมายที่ต้องการอ่านข้อความ",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ChatMessageResponse"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ข้อความในนัดหมายหนึ่งรายการ (เก่า → ใหม่)",
+        "tags": [
+          "chat-messages"
+        ]
+      },
+      "post": {
+        "operationId": "ChatMessagesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChatMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ChatMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ส่งข้อความในนัดหมายของตัวเอง",
+        "tags": [
+          "chat-messages"
+        ]
+      }
+    },
+    "/api/v1/chat-messages/{id}/read": {
+      "patch": {
+        "operationId": "ChatMessagesController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ChatMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ทำเครื่องหมายว่าอ่านข้อความแล้ว",
+        "tags": [
+          "chat-messages"
+        ]
+      }
+    },
+    "/api/v1/schedule-slots": {
+      "get": {
+        "operationId": "ScheduleController_findSlots",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "teacherCoreUserId",
+            "required": false,
+            "in": "query",
+            "description": "ค่า sub ของอาจารย์ (ไม่ใช่ UUID เสมอไป) — อาจารย์ไม่ระบุ = ตารางของตัวเอง",
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          },
+          {
+            "name": "weekStart",
+            "required": false,
+            "in": "query",
+            "description": "วันใดก็ได้ในสัปดาห์ที่ต้องการ (วันนี้ถ้าไม่ระบุ)",
+            "schema": {
+              "example": "2026-10-05",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ScheduleSlotResponse"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ช่วงนัดของอาจารย์ในสัปดาห์หนึ่ง (จันทร์-ศุกร์) เรียงตามเวลา — ส่ง limit=100 เพื่อได้ทั้งสัปดาห์",
+        "tags": [
+          "schedule-slots"
+        ]
+      }
+    },
+    "/api/v1/teachers": {
+      "get": {
+        "operationId": "TeachersController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TeacherResponse"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaModel"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "อาจารย์ที่เปิดเวลาทำการแล้ว (ใช้เลือกดูตาราง)",
+        "tags": [
+          "teachers"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Q-Teacher API",
+    "description": "ระบบนัดหมายเข้าพบอาจารย์ (CSMJU2030) — ตอบเป็น { success, data[, meta] } หรือ { success: false, error } ตามมาตรฐาน api-conventions.md · ต้องมี token ของ Core Hub ทุก endpoint ยกเว้น /api/health",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "csmju_q_teacher_access_token"
+      }
+    },
+    "schemas": {
+      "PaginationMetaModel": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "example": 42
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 3
+          }
+        },
+        "required": [
+          "total",
+          "page",
+          "limit",
+          "totalPages"
+        ]
+      },
+      "OfficeHourResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacherCoreUserId": {
+            "type": "string",
+            "description": "ค่า sub ของอาจารย์เจ้าของเวลา"
+          },
+          "teacherPersonCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "รหัสบุคลากรจาก Core Hub (แสดงแทนชื่อ)"
+          },
+          "dayOfWeek": {
+            "type": "string",
+            "enum": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ]
+          },
+          "startTime": {
+            "type": "string",
+            "example": "09:00",
+            "description": "เวลาท้องถิ่น Asia/Bangkok รูปแบบ HH:mm"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "12:00"
+          },
+          "slotMinutes": {
+            "type": "number",
+            "example": 30
+          },
+          "isAvailable": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "teacherCoreUserId",
+          "teacherPersonCode",
+          "dayOfWeek",
+          "startTime",
+          "endTime",
+          "slotMinutes",
+          "isAvailable",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateOfficeHourDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "string",
+            "enum": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "example": "MON"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "09:00",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "12:00",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "slotMinutes": {
+            "type": "number",
+            "minimum": 5,
+            "maximum": 240,
+            "default": 30,
+            "description": "ความยาวของช่วงนัด 1 ช่วง (นาที)"
+          },
+          "isAvailable": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "UpdateOfficeHourDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "string",
+            "enum": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "example": "MON"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "09:00",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "12:00",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "slotMinutes": {
+            "type": "number",
+            "minimum": 5,
+            "maximum": 240,
+            "default": 30,
+            "description": "ความยาวของช่วงนัด 1 ช่วง (นาที)"
+          },
+          "isAvailable": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "DeletedModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deleted": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "deleted"
+        ]
+      },
+      "BookingExceptionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacherCoreUserId": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "UNAVAILABLE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "teacherCoreUserId",
+          "startsAt",
+          "endsAt",
+          "status",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateBookingExceptionDto": {
+        "type": "object",
+        "properties": {
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-05T12:00:00+07:00"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-05T13:00:00+07:00"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "UNAVAILABLE"
+            ],
+            "description": "AVAILABLE = เปิดเวลานี้ให้จอง · UNAVAILABLE = ปิดเวลานี้"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "startsAt",
+          "endsAt",
+          "status"
+        ]
+      },
+      "BookingResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacherCoreUserId": {
+            "type": "string",
+            "description": "ค่า sub ของอาจารย์"
+          },
+          "teacherPersonCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "รหัสบุคลากรจาก Core Hub (แสดงแทนชื่อ)"
+          },
+          "studentCoreUserId": {
+            "type": "string",
+            "description": "ค่า sub ของนักศึกษา"
+          },
+          "studentPersonCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "รหัสนักศึกษาจาก Core Hub (แสดงแทนชื่อ)"
+          },
+          "studentFullNameTh": {
+            "type": "string",
+            "nullable": true,
+            "description": "ชื่อนักศึกษา อ่านจาก Core Hub ตอนเปิดดูรายการเดียวและเฉพาะผู้ที่มีสิทธิ์อ่านข้อมูลบุคคล — ไม่เก็บในฐานข้อมูล"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED"
+            ]
+          },
+          "unreadCount": {
+            "type": "number",
+            "description": "จำนวนข้อความในคิวนี้ที่อีกฝ่ายส่งมาและยังไม่ได้อ่าน"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "teacherCoreUserId",
+          "teacherPersonCode",
+          "studentCoreUserId",
+          "studentPersonCode",
+          "studentFullNameTh",
+          "startsAt",
+          "endsAt",
+          "topic",
+          "status",
+          "unreadCount",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateBookingDto": {
+        "type": "object",
+        "properties": {
+          "studentPersonCode": {
+            "type": "string",
+            "example": "6704101312",
+            "maxLength": 50
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-12T09:00:00+07:00"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-12T09:30:00+07:00"
+          },
+          "topic": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "ปรึกษาโครงงานพิเศษ"
+          }
+        },
+        "required": [
+          "studentPersonCode",
+          "startsAt",
+          "endsAt",
+          "topic"
+        ]
+      },
+      "ChatMessageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderCoreUserId": {
+            "type": "string",
+            "description": "ค่า sub ของผู้ส่ง — เทียบกับ id จาก GET /api/v1/me เพื่อรู้ว่าเป็นข้อความของเราหรือไม่"
+          },
+          "message": {
+            "type": "string"
+          },
+          "isRead": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "bookingId",
+          "senderCoreUserId",
+          "message",
+          "isRead",
+          "createdAt"
+        ]
+      },
+      "CreateChatMessageDto": {
+        "type": "object",
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "example": "สวัสดี ขอเลื่อนนัดได้ไหม"
+          }
+        },
+        "required": [
+          "bookingId",
+          "message"
+        ]
+      },
+      "SlotBookingModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentPersonCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "รหัสนักศึกษา (แสดงแทนชื่อ)"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "studentPersonCode",
+          "topic",
+          "status"
+        ]
+      },
+      "ScheduleSlotResponse": {
+        "type": "object",
+        "properties": {
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "BOOKED"
+            ]
+          },
+          "bookedByMe": {
+            "type": "boolean",
+            "description": "นัดหมายในช่วงนี้เป็นของผู้เรียกเอง"
+          },
+          "booking": {
+            "nullable": true,
+            "description": "รายละเอียดนัดหมาย — เห็นเฉพาะอาจารย์เจ้าของตารางและผู้ดูแลระบบ คนอื่นเห็นแค่ว่าไม่ว่าง",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SlotBookingModel"
+              }
+            ]
+          }
+        },
+        "required": [
+          "startsAt",
+          "endsAt",
+          "status",
+          "bookedByMe",
+          "booking"
+        ]
+      },
+      "TeacherResponse": {
+        "type": "object",
+        "properties": {
+          "coreUserId": {
+            "type": "string",
+            "description": "ค่า sub ของอาจารย์ — ใช้เป็น teacherCoreUserId ในคำขออื่น"
+          },
+          "personCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "รหัสบุคลากรจาก Core Hub (แสดงแทนชื่อ)"
+          }
+        },
+        "required": [
+          "coreUserId",
+          "personCode"
+        ]
+      },
+      "HealthModel": {
+        "type": "object",
+        "required": [
+          "status",
+          "service"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          },
+          "service": {
+            "type": "string",
+            "example": "csmju-q-teacher"
+          }
+        }
+      },
+      "MeModel": {
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "coreRole",
+          "subsystemRole",
+          "session"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ค่า sub ของผู้ใช้ใน Core Hub (ไม่ใช่ UUID เสมอไป)"
+          },
+          "email": {
+            "type": "string",
+            "description": "ใช้แสดงผลเท่านั้น ห้ามใช้เป็นกุญแจ"
+          },
+          "coreRole": {
+            "type": "string",
+            "example": "lecturer"
+          },
+          "subsystemRole": {
+            "type": "string",
+            "enum": [
+              "STUDENT",
+              "TEACHER",
+              "ADMIN"
+            ]
+          },
+          "session": {
+            "type": "object",
+            "required": [
+              "expiresAt"
+            ],
+            "properties": {
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
