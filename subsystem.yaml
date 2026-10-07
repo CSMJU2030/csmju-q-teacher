@@ -22,17 +22,24 @@ public_endpoints:
 
 # conformance ใช้ probes ตรวจสัญญา API — ประกาศไม่ครบ = ขึ้น SKIP = ยังไม่ผ่าน
 probes:
-  collection: /api/v1/<resources>
-  not_found: /api/v1/<resources>/99999999-9999-4999-8999-999999999999
-  invalid_id: /api/v1/<resources>/not-a-uuid
+  collection: /api/v1/bookings
+  not_found: /api/v1/bookings/99999999-9999-4999-8999-999999999999
+  invalid_id: /api/v1/bookings/not-a-uuid
   create:
-    path: /api/v1/<resources>
-    allowed_role: staff
+    # เพิ่มข้อยกเว้นของตารางอาจารย์ (booking-exceptions): สร้างซ้ำได้ไม่ชน (ข้อยกเว้นล่าสุดชนะ)
+    # ต่างจาก office-hours ที่ตอบ 409 เมื่อช่วงเวลาซ้อนกัน จึงไม่เหมาะกับการรันซ้ำ
+    path: /api/v1/booking-exceptions
+    allowed_role: lecturer            # TEACHER ของระบบนี้ (core role lecturer)
     denied_role: guest                # role ที่ต้องได้ 403 และมีบัญชีรหัสผ่าน (guest หรือ alumni) — student มีแต่ MJU SSO
     invalid_body:
-      someRequiredField: ""
+      startsAt: ""
+      endsAt: ""
+      status: ""
     valid_body:
-      someRequiredField: value
+      startsAt: "2031-01-06T12:00:00+07:00"
+      endsAt: "2031-01-06T13:00:00+07:00"
+      status: UNAVAILABLE
+      reason: conformance probe
 
 owners:
   pl: "@csmju2030/pl-q-teacher"
