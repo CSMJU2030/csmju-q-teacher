@@ -1,0 +1,101 @@
+# Q-Teacher runs its own API and its own database.
+# It never connects to the Core Hub database - only to the Core Hub API and JWKS URL.
+#
+#   docker compose up -d db              PostgreSQL only, for `pnpm dev` (port 5434)
+#   docker compose up -d --build         db + api + web, built the way the server runs them
+#                                        -> http://localhost:3224
+#
+# The server does not use this file. There DevOps runs the same two images against
+# the shared PostgreSQL (standards docs/deployment.md); this file stands in for that
+# on your own machine. The service names are part of the contract: the web image
+# sends /api/* and /auth/* to http://api:4000.
+
+# Same lock-down as the server (deployment.md 6): a read-only filesystem, no
+# Linux capabilities, the server's memory caps and rotated logs. Code that
+# writes files outside /tmp or needs more memory fails here first.
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ['no-new-privileges:true']
+  logging:
+    driver: json-file
+    options: { max-size: '10m', max-file: '3' }
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: csmju-q-teacher-db
+    restart: unless-stopped
+    environment:
+      # local only - on the server DevOps creates the database and its role
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: csmju_q_teacher_db
+    ports:
+      # 5434 on the host so it cannot collide with a Core Hub database on 5432
+      - '127.0.0.1:5434:5432'
+    volumes:
+      - csmju-q-teacher-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d csmju_q_teacher_db']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: csmju-q-teacher-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/csmju_q_teacher_db
+      DATABASE_POOL_MAX: 5
+      CORE_HUB_URL: ${CORE_HUB_URL:-https://csmju2030.jowave.com}
+      CORE_HUB_JWKS_URL: ${CORE_HUB_JWKS_URL:-https://csmju2030.jowave.com/api/v1/.well-known/jwks.json}
+      # Core Hub's web app, as the BROWSER reaches it (/auth/login redirects there)
+      CORE_HUB_WEB_URL: ${CORE_HUB_WEB_URL:-https://csmju2030.jowave.com}
+      CORE_HUB_ISSUER: ${CORE_HUB_ISSUER:-core-hub}
+      CORE_HUB_AUDIENCE: ${CORE_HUB_AUDIENCE:-csmju2030}
+      SUBSYSTEM_ID: ${SUBSYSTEM_ID:-csmju-q-teacher}
+      SUBSYSTEM_NAME: ${SUBSYSTEM_NAME:-CSMJU Q-Teacher}
+      TZ: Asia/Bangkok
+    tmpfs:
+      - /tmp:size=32m
+    mem_limit: 512m
+    # no ports: the browser reaches the API only through web (/api/*, /auth/*)
+    extra_hosts:
+      # Core Hub team: point CORE_HUB_* at http://host.docker.internal:3000 to use a local Core Hub
+      - 'host.docker.internal:host-gateway'
+
+  web:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: csmju-q-teacher-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    tmpfs:
+      - /tmp:size=32m
+      # next/image cache
+      - /app/frontend/.next/cache:size=64m
+    mem_limit: 384m
+    environment:
+      CORE_HUB_WEB_URL: ${CORE_HUB_WEB_URL:-https://csmju2030.jowave.com}
+      SUBSYSTEM_ID: ${SUBSYSTEM_ID:-csmju-q-teacher}
+      TZ: Asia/Bangkok
+    ports:
+      # the callback registered in Core Hub is http://localhost:3224/auth/callback
+      - '127.0.0.1:3224:3000'
+
+volumes:
+  csmju-q-teacher-db-data:
