@@ -1,5 +1,24 @@
 {
   "name": "csmju-q-teacher",
+  "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@9.15.9"
+  "description": "Q-Teacher - ระบบนัดหมายเข้าพบอาจารย์ (office hours) ของโครงการ CSMJU2030 เข้าใช้งานผ่าน Core Hub SSO เท่านั้น",
+  "scripts": {
+    "dev": "pnpm --parallel --filter backend --filter frontend dev",
+    "build": "pnpm --filter backend build && pnpm --filter frontend build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter backend test",
+    "test:e2e": "pnpm --filter backend test:e2e",
+    "generate:openapi": "pnpm --filter backend generate:openapi",
+    "generate:api-types": "pnpm --filter frontend generate:api-types",
+    "prisma:deploy": "pnpm --filter backend prisma:deploy",
+    "prisma:seed": "pnpm --filter backend prisma:seed",
+    "conformance": "node standards/conformance/run.js",
+    "checks": "./standards/scripts/run-all-checks.sh ."
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@12.3.4"
 }
