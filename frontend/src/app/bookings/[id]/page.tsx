@@ -110,7 +110,7 @@ export default async function BookingPage({
         </div>
       </section>
 
-      <section className={`fade-slide-up stagger-2 ${cardClass}`} aria-labelledby="chat-title">
+      <section id="chat" className={`fade-slide-up stagger-2 scroll-mt-20 ${cardClass}`} aria-labelledby="chat-title">
         <h2
           id="chat-title"
           className="border-b border-outline-variant/40 px-6 py-5 font-display text-headline-md text-on-surface"

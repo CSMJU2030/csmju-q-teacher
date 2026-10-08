@@ -7,7 +7,7 @@ import Notice from "@/components/Notice";
 import { requireMe } from "@/components/session";
 import WeekGrid from "@/components/WeekGrid";
 import { GroupIcon, PageHeader, cardClass, inputClass, primaryButtonClass, secondaryButtonClass } from "@/csmju";
-import { isUnauthorized, listScheduleSlots, listTeachers } from "@/lib/api";
+import { isUnauthorized, listBookings, listScheduleSlots, listTeachers, type ScheduleSlot } from "@/lib/api";
 import { addDays, bangkokDate, formatCalendarDate, formatSlot, mondayOf, readDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +54,22 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const here = `/schedule${teacherId ? `?teacher=${encodeURIComponent(teacherId)}&` : "?"}week=${weekStart}`;
   if (isUnauthorized(slots)) return <ReSignIn next={here} />;
   if (!slots.ok) return <LoadFailed message={slots.message} />;
+
+  // The schedule shows a student only that a slot is theirs; their own bookings
+  // of this week give the id, so the slot can open the chat with the teacher.
+  const mine =
+    me.subsystemRole === "STUDENT"
+      ? await listBookings({ from: weekStart, to: addDays(weekStart, 4), limit: 100 })
+      : null;
+  if (mine && isUnauthorized(mine)) return <ReSignIn next={here} />;
+  const myBookings = mine?.ok ? mine.data.filter((booking) => booking.status !== "CANCELLED") : [];
+  const myBookingIdFor = (slot: ScheduleSlot) =>
+    myBookings.find(
+      (booking) =>
+        booking.teacherCoreUserId === teacherId &&
+        new Date(booking.startsAt) < new Date(slot.endsAt) &&
+        new Date(slot.startsAt) < new Date(booking.endsAt),
+    )?.id;
 
   const weekEnd = addDays(weekStart, 4);
   const link = (week: string) => `/schedule${teacherId ? `?teacher=${encodeURIComponent(teacherId)}&` : "?"}week=${week}`;
@@ -163,6 +179,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           editable={ownWeek}
           returnTo={here}
           slotLink={(startsAt) => `${here}&slot=${encodeURIComponent(startsAt)}`}
+          myBookingIdFor={myBookingIdFor}
         />
       </section>
     </>

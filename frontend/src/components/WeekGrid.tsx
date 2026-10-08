@@ -12,6 +12,9 @@ import {
   minutesOfDay,
 } from "@/lib/format";
 
+const chatLinkClass =
+  "rounded-md bg-primary-container px-2.5 py-1 text-label-sm text-white transition-opacity hover:opacity-90";
+
 const DEFAULT_FROM = 8 * 60;
 const DEFAULT_TO = 17 * 60;
 
@@ -40,6 +43,7 @@ export default function WeekGrid({
   editable,
   returnTo,
   slotLink,
+  myBookingIdFor,
 }: {
   weekStart: string;
   slots: ScheduleSlot[];
@@ -48,6 +52,8 @@ export default function WeekGrid({
   returnTo: string;
   /** Link that picks a free slot to book, from the slot's start. */
   slotLink: (startsAt: string) => string;
+  /** A student's own appointment in a slot (the schedule hides its id from anyone but the teacher). */
+  myBookingIdFor?: (slot: ScheduleSlot) => string | undefined;
 }) {
   const dates = [0, 1, 2, 3, 4].map((offset) => addDays(weekStart, offset));
   const today = bangkokDate();
@@ -124,7 +130,13 @@ export default function WeekGrid({
                       rowSpan={cell.rowSpan}
                       className="border-l border-outline-variant/30 px-2 py-2 align-top"
                     >
-                      <SlotCell slot={cell.slot} editable={editable} returnTo={returnTo} slotLink={slotLink} />
+                      <SlotCell
+                        slot={cell.slot}
+                        editable={editable}
+                        returnTo={returnTo}
+                        slotLink={slotLink}
+                        myBookingId={myBookingIdFor?.(cell.slot)}
+                      />
                     </td>
                   );
                 })}
@@ -172,11 +184,13 @@ function SlotCell({
   editable,
   returnTo,
   slotLink,
+  myBookingId,
 }: {
   slot: ScheduleSlot;
   editable: boolean;
   returnTo: string;
   slotLink: (startsAt: string) => string;
+  myBookingId?: string;
 }) {
   const range = formatSlot(slot.startsAt, slot.endsAt);
 
@@ -214,12 +228,22 @@ function SlotCell({
       </p>
       {booking && <p className="mt-0.5 break-words text-on-surface-variant">{booking.topic}</p>}
       {!booking && slot.bookedByMe && (
-        <Link href="/bookings" className="mt-1 inline-block text-label-sm underline">
-          ดูนัดหมายของฉัน
-        </Link>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          <Link href={myBookingId ? `/bookings/${myBookingId}#chat` : "/messages"} className={chatLinkClass}>
+            แชทกับอาจารย์
+          </Link>
+          {myBookingId && (
+            <Link href={`/bookings/${myBookingId}`} className="text-label-sm underline">
+              ดูรายละเอียด
+            </Link>
+          )}
+        </div>
       )}
       {booking && (
         <div className="mt-1 flex flex-wrap items-center gap-2">
+          <Link href={`/bookings/${booking.id}#chat`} aria-label={`แชท ${range}`} className={chatLinkClass}>
+            แชท
+          </Link>
           <Link href={`/bookings/${booking.id}`} className="text-label-sm underline">
             ดูรายละเอียด
           </Link>

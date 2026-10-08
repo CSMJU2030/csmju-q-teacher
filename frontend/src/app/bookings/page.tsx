@@ -113,6 +113,15 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                       <td className={`${tdClass} tabular-nums text-on-surface-variant`}>{booking.unreadCount}</td>
                       <td className={`${tdClass} text-right`}>
                         <div className="flex flex-wrap items-center justify-end gap-2">
+                          {me.subsystemRole !== "ADMIN" && (
+                            <Link
+                              href={`/bookings/${booking.id}#chat`}
+                              aria-label={`แชท ${range}`}
+                              className="text-label-md text-primary-container hover:underline"
+                            >
+                              แชท{booking.unreadCount > 0 ? ` (${booking.unreadCount})` : ""}
+                            </Link>
+                          )}
                           <Link
                             href={`/bookings/${booking.id}`}
                             aria-label={`ดูรายละเอียดนัดหมาย ${range}`}

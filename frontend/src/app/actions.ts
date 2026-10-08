@@ -23,7 +23,7 @@ function returnPath(formData: FormData, fallback: string): string {
 function withResult(path: string, result: Record<string, string>): string {
   const url = new URL(path, "http://local");
   for (const [key, value] of Object.entries(result)) url.searchParams.set(key, value);
-  return `${url.pathname}${url.search}`;
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 /**
@@ -134,7 +134,8 @@ export async function completeBooking(formData: FormData) {
 
 export async function sendChatMessage(formData: FormData) {
   const bookingId = text(formData, "bookingId");
-  const path = `/bookings/${encodeURIComponent(bookingId)}`;
+  // Back to the conversation itself, not the top of the booking page.
+  const path = `/bookings/${encodeURIComponent(bookingId)}#chat`;
   const message = text(formData, "message");
   if (!message) {
     back(path, { ok: false, status: 400, code: "VALIDATION_ERROR", message: "กรุณาพิมพ์ข้อความก่อนส่ง" }, "");

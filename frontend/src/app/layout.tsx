@@ -38,6 +38,10 @@ function navFor(me: Me): NavItem[] {
       ? [{ label: "อาจารย์", labelEn: "Teachers", href: "/teachers", icon: "school" } satisfies NavItem]
       : []),
     { label: "นัดหมายของฉัน", labelEn: "Bookings", href: "/bookings", icon: "description" },
+    // Chat is only between the two people of a booking - an admin has none to read.
+    ...(me.subsystemRole !== "ADMIN"
+      ? [{ label: "ข้อความ", labelEn: "Messages", href: "/messages", icon: "campaign" } satisfies NavItem]
+      : []),
     ...(teacherSide
       ? [{ label: "เวลาทำการ", labelEn: "Office hours", href: "/office-hours", icon: "settings" } satisfies NavItem]
       : []),
